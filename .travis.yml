@@ -125,6 +125,7 @@ jobs:
         yarn: true
         directories:
           - example/node_modules
+      podfile: example/ios/Podfile
       before_install:
         - nvm install 10
         - node --version
@@ -132,8 +133,6 @@ jobs:
         - yarn -version
         - cd example
         - yarn
-        - gem install cocoapods
-        - cd ios && pod install --repo-update && cd ..
         - softwareupdate --list
         - softwareupdate --install "Command Line Tools (macOS High Sierra version 10.13) for Xcode-10.1"
         - brew tap wix/brew

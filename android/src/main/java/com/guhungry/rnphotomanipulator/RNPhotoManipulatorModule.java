@@ -20,6 +20,10 @@ import com.guhungry.photomanipulator.MimeUtils;
 import com.guhungry.rnphotomanipulator.utils.ImageUtils;
 import com.guhungry.rnphotomanipulator.utils.ParamUtils;
 
+import android.media.ExifInterface;
+import android.graphics.Matrix;
+import android.net.Uri;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -97,6 +101,23 @@ public class RNPhotoManipulatorModule extends ReactContextBaseJavaModule {
         }
     }
 
+    private int getImageRotation(int orientation) {
+        int rotationDegrees = 0;
+        switch (orientation) {
+        case ExifInterface.ORIENTATION_ROTATE_90:
+            rotationDegrees = 90;
+            break;
+        case ExifInterface.ORIENTATION_ROTATE_180:
+            rotationDegrees = 180;
+            break;
+        case ExifInterface.ORIENTATION_ROTATE_270:
+            rotationDegrees = 270;
+            break;
+        }
+
+        return rotationDegrees;
+    }
+    
     @ReactMethod
     public void overlayImage(String uri, String icon, ReadableMap position, String mimeType, Promise promise) {
         try {

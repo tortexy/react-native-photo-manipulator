@@ -20,6 +20,10 @@ import com.guhungry.photomanipulator.MimeUtils;
 import com.guhungry.rnphotomanipulator.utils.ImageUtils;
 import com.guhungry.rnphotomanipulator.utils.ParamUtils;
 
+import android.media.ExifInterface;
+import android.graphics.Matrix;
+import android.net.Uri;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -97,10 +101,43 @@ public class RNPhotoManipulatorModule extends ReactContextBaseJavaModule {
         }
     }
 
+    private int getImageRotation(int orientation) {
+        int rotationDegrees = 0;
+        switch (orientation) {
+        case ExifInterface.ORIENTATION_ROTATE_90:
+            rotationDegrees = 90;
+            break;
+        case ExifInterface.ORIENTATION_ROTATE_180:
+            rotationDegrees = 180;
+            break;
+        case ExifInterface.ORIENTATION_ROTATE_270:
+            rotationDegrees = 270;
+            break;
+        }
+
+        return rotationDegrees;
+    }
+    
     @ReactMethod
     public void overlayImage(String uri, String icon, ReadableMap position, String mimeType, Promise promise) {
         try {
+            
+            Uri myUri = Uri.parse(uri);
+            ExifInterface exif = new ExifInterface(myUri.getPath());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
             Bitmap output = ImageUtils.bitmapFromUri(getReactApplicationContext(), uri, ImageUtils.mutableOptions());
+            
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_90 || orientation == ExifInterface.ORIENTATION_ROTATE_270 || orientation == ExifInterface.ORIENTATION_ROTATE_180)
+            {
+                int width = output.getWidth(), height = output.getHeight();
+
+                Matrix matrix = new Matrix();
+                // setup rotation degree
+                matrix.postRotate(this.getImageRotation(orientation));
+                output = Bitmap.createBitmap(output, 0, 0, width, height, matrix, true);
+            }
+            
             Bitmap overlay = ImageUtils.bitmapFromUri(getReactApplicationContext(), icon);
 
             BitmapUtils.overlay(output, overlay, ParamUtils.pointfFromMap(position));
